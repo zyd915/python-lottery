@@ -7,6 +7,7 @@ from app.service import lottery_util
 from app.vo.rate import Rate
 
 class Lottery(object):
+
     # 红色球基数
     redBallCount = 6
     # 蓝色球基数
@@ -22,8 +23,6 @@ class Lottery(object):
 
     def __init__(self):
        object.__init__(self)
-
-
 
 def main():
     redBallRateList = []

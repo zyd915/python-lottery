@@ -4,20 +4,12 @@ __author__ = 'zhangyude'
 from util.db.model.fields import *
 from util.db.db_util import *
 from settings import *
+from util.db.model.db_helper import *
 
-def insert_by_sql(conn, sql):
-    pass
+# 模型基类
+class Model(DBHelper):
 
-def delete_by_sql(conn, sql):
-    pass
-
-def update_by_sql(conn, sql):
-    pass
-
-def find_by_sql(conn, sql):
-    pass
-
-class Model(object):
+    # 初始化函数
     def __init__(self, _name=None, _tableName=None, _primaryKey=None, _columns=[], _sql_create=None):
         self._name = _name
         self._tableName = _tableName or _name
@@ -26,10 +18,20 @@ class Model(object):
         self._sql_create = _sql_create
         self.conn = None
 
+    def __eq__(self, other):
+        if other is None or not isinstance(other, self.__class__):
+            return False
+        elif other._tableName is not None and other._tableName == self._tableName:
+            return self.get_fields(obj=other,fieldName=self._primaryKey).data == self.get_fields(fieldName=self._primaryKey).data
+        else:
+            return False
+
+    # 通过model实例创建表
     def db_create_table(self):
         self.get_conn()
+        sql_create = None
         if self._sql_create is not None:
-            execute_sql(self.conn, self._sql_create)
+            sql_create = self._sql_create
         else:
             sql_create = 'create table ' + self._tableName + '(\n'
             fields = self.get_fields()
@@ -37,8 +39,9 @@ class Model(object):
                 sql_create += ' ' + field.get_create_field_sql() + ', \n'
             sql_create = sql_create.rstrip(', \n')
             sql_create += '\n) '
-            execute_sql(conn=self.conn, sql=sql_create)
+        return self.execute_by_sql(conn=self.conn, sql=sql_create)
 
+    # 获取Model属性字典
     def get_fields(self, obj=None, fieldName=None):
         object = None
         if obj is None:
@@ -58,27 +61,23 @@ class Model(object):
                     fieldList[field] = fields[field]
             return fieldList
 
-    def __eq__(self, other):
-        if other is None or not isinstance(other, self.__class__):
-            return False
-        elif other._tableName is not None and other._tableName == self._tableName:
-            return self.get_fields(obj=other,fieldName=self._primaryKey).data == self.get_fields(fieldName=self._primaryKey).data
-        else:
-            return False
-
+    # 获取数据库连接
     def get_conn(self):
         if self.conn is None:
-            self.conn = db_conn(db_file_path)
+            self.conn = self.get_default_conn()
         return self.conn
 
+    # 设置数据库连接
     def set_conn(self, conn):
         self.conn = conn
 
+    # 关闭数据库连接
     def close_conn(self, close=False):
         if self.conn is not None and close is True:
             self.conn.close()
 
-    def get_columns(self):
+    # 加载列名
+    def load_columns(self):
         columns_dict = self.__dict__
         for column in columns_dict:
             if isinstance(columns_dict.get(column), Field):
@@ -87,36 +86,19 @@ class Model(object):
 
     def save(self, close_conn=False):
         self.get_conn()
-        tableName = self._tableName or self._name
-        dataItems = []
-        columns_dict = self.__dict__
-        for column in columns_dict:
-            field = columns_dict.get(column)
-            if isinstance(field, Field):
-                dataItems.append((column, field.data))
         try:
-            return insert_data_one(self.conn, tableName, dataItems)
+            return self.save_obj(conn=self.conn, obj=self)
         finally:
             self.close_conn(close_conn)
 
-    def delete(self, close_conn=False):
+    def delete(self, close_conn=False, by_primary_key=False):
         self.get_conn()
-        tableName = self._tableName or self._name
-        conditions = None
-        if self._primaryKey is not None and self.__dict__[self._primaryKey] is not None:
-            conditions = self._primaryKey + '=' + self.__dict__[self._primaryKey].data
         try:
-            return delete_by_conditions(self.conn, tableName, conditions)
+            return self.delete_obj(conn=self.conn, obj=self, by_primary_key=by_primary_key)
         finally:
             self.close_conn(close_conn)
 
-    def deleteByConditions(self, conditions, close_conn=False):
-        self.get_conn()
-        tableName = self._tableName or self._name
-        try:
-            return delete_by_conditions(self.conn, tableName, conditions)
-        finally:
-            self.close_conn(close_conn)
+
 
     def update(self, close_conn=False):
         self.get_conn()
@@ -162,11 +144,12 @@ class Model(object):
                 elif len(cursor) > 0:
                     row = cursor[0]
                     self._loadFieldsValues(row)
-                return self
             except:
-                return None
+                if debug_flag:
+                    raise SqlError(u'加载数据出现异常')
+                pass
         else:
-            return None
+            pass
 
     def _loadFieldsValues(self, row):
         for column in row.keys():
