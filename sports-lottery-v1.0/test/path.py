@@ -1,0 +1,1 @@
+#coding=UTF-8__author__ = 'Administrator'import sysimport osdef get_current_path():    print(sys.path)    print(sys.meta_path)    print(os.getcwd().replace('\\', '/'))    print(os.path.dirname(__file__))if __name__ == '__main__':    get_current_path()
