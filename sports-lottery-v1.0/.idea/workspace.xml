@@ -106,7 +106,7 @@
       <file leaf-file-name="models.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/util/db/model/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="74" column="8" selection-start="2366" selection-end="2366" vertical-scroll-proportion="-2.6678507" vertical-offset="3500" max-vertical-offset="4536">
+            <state line="74" column="8" selection-start="2366" selection-end="2366" vertical-scroll-proportion="-2.2362344" vertical-offset="3257" max-vertical-offset="4536">
               <folding>
                 <element signature="e#40#74#0" expanded="true" />
               </folding>
@@ -471,6 +471,7 @@
     <property name="recentsLimit" value="5" />
     <property name="options.lastSelected" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="FullScreen" value="false" />
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
   </component>
@@ -864,7 +865,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/util/db/model/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="74" column="8" selection-start="2366" selection-end="2366" vertical-scroll-proportion="-2.6678507" vertical-offset="3500" max-vertical-offset="4536">
+        <state line="74" column="8" selection-start="2366" selection-end="2366" vertical-scroll-proportion="-2.2362344" vertical-offset="3257" max-vertical-offset="4536">
           <folding>
             <element signature="e#40#74#0" expanded="true" />
           </folding>
