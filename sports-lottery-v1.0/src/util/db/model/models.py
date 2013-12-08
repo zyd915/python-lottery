@@ -42,7 +42,7 @@ class Model(DBHelper):
         return self.execute_by_sql(conn=self.conn, sql=sql_create)
 
     # 获取Model属性字典
-    def get_fields(self, obj=None, fieldName=None):
+    def get_fields(self, obj=None, fieldName=None,justData=False, filterNone=False, filterPrimaryKey=False):
         object = None
         if obj is None:
             object = self
@@ -57,8 +57,16 @@ class Model(DBHelper):
         else:
             fieldList = {}
             for field in fields:
-                if isinstance(fields[field], Field):
-                    fieldList[field] = fields[field]
+                if isinstance(fields[field], Field) :
+                    if filterPrimaryKey and field == object._primaryKey:
+                        continue
+                    if justData:
+                        if filterNone and fields[field].data is None:
+                            continue
+                        fieldList[field] = fields[field].data
+                    else:
+                        fieldList[field] = fields[field]
+
             return fieldList
 
     # 获取数据库连接
@@ -102,15 +110,12 @@ class Model(DBHelper):
 
     def update(self, close_conn=False):
         self.get_conn()
-        tableName = self._tableName or self._name
+        tableName = self._tableName
         conditions = None
         if self._primaryKey is not None and self.__dict__[self._primaryKey] is not None:
             conditions = self._primaryKey + '=' + self.__dict__[self._primaryKey].data
         dataItems = []
         columns_dict = self.__dict__
-        for column in columns_dict:
-            if isinstance(columns_dict.get(column), Field) and column is not self._primaryKey:
-                dataItems.append((column, columns_dict.get(column).data))
         try:
             return update_by_conditions(self.conn, tableName, dataItems, conditions)
         finally:

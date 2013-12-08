@@ -76,13 +76,8 @@ class DBHelper(object):
         if obj is None or not isinstance(obj, Model):
             return exec_error
         tableName = obj._tableName
-        fieldList = []
-        columns_dict = obj.__dict__
-        for column in columns_dict:
-            field = columns_dict.get(column)
-            if isinstance(field, Field):
-                fieldList.append((column, field.data))
-        return insert_one_by_fieldList(obj.conn, tableName, fieldList)
+        fieldList = obj.get_fields(justData=True, filterNone=True)
+        return insert_one_by_dataDict_conditions(conn=obj.conn, tableName=tableName, dataDict=fieldList)
 
     # 删除对象
     @staticmethod
@@ -95,14 +90,14 @@ class DBHelper(object):
             if obj._primaryKey is not None and obj.__dict__[obj._primaryKey] is not None:
                 conditions = obj._primaryKey + '=' + obj.__dict__[obj._primaryKey].data
         else:
-            fields = obj.get_fields()
+            fields = obj.get_fields(justData=True, filterNone=True)
             for name in fields :
                 if fields[name] is None: continue
                 condition = to_db_condition(name=name, value=fields[name])
                 if condition is not None:
                     conditions += " " + condition + " and "
             conditions = conditions.rstrip(" and ")
-        return delete_by_conditions(obj.conn, tableName, conditions)
+        return delete_by_conditions(conn=conn, tableName=tableName, conditions=conditions)
 
     # 根据条件删除
     @staticmethod
@@ -124,12 +119,8 @@ class DBHelper(object):
                 return exec_error
             conditions = obj._primaryKey + '=' + obj.__dict__[obj._primaryKey].data
         elif isinstance(obj, Model) and not by_primary_key:
-            fields = obj.get_fields()
-            update_fields = {}
-            for field in fields:
-                if fields[field] is None: continue
-                update_fields[field] = fields[field]
-        return update_by_conditions(obj.conn, obj._tableName, update_fields, conditions)
+            fields = obj.get_fields(justData=True, filterNone=True)
+        return update_by_conditions(conn=conn, tableName=obj._tableName, dataDict=fields, conditions=conditions)
 
 
 if  __name__ == '__main__':

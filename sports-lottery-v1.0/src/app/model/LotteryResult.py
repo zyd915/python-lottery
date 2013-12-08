@@ -3,6 +3,8 @@ __author__ = 'Administrator'
 
 from util.db.model.models import *
 from util.csv.csv_reader import *
+from app.vo.ball import *
+
 
 # 从txt文件中获取抽奖结果集
 # 格式：双色球

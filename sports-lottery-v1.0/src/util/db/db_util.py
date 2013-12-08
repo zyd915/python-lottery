@@ -31,6 +31,7 @@ def db_conn(db_file_path):
     except Exception as e:
         if debug_flag:
             print(u'连接数据库出现异常：\n'+e.args[0])
+            raise e
         return None
 
 # 执行sql脚本（多条语句）
@@ -38,6 +39,7 @@ def execute_sql_script(conn=None, sql_script=None):
     if conn is None or sql_script is None or len(sql_script) == 0:
         return exec_error
     if debug_flag:
+        print(u'执行SQL脚本：')
         print(sql_script)
     try:
         cursor = conn.cursor()
@@ -47,6 +49,7 @@ def execute_sql_script(conn=None, sql_script=None):
     except sqlite3.Error as e:
         if debug_flag:
             print(u"执行SQL出现异常：\n" + e.args[0])
+            raise e
         return exec_error
 
 # 执行sql
@@ -54,6 +57,7 @@ def execute_sql(conn=None, sql=None, params=None):
     if conn is None or sql is None or len(sql) == 0:
         return exec_error
     if debug_flag :
+        print(u'执行SQL：')
         print(sql)
     try:
         cursor = conn.cursor()
@@ -68,6 +72,7 @@ def execute_sql(conn=None, sql=None, params=None):
     except sqlite3.Error as e:
         if debug_flag:
             print(u"执行SQL出现异常：\n" + e.args[0])
+            raise e
         return exec_error
 
 # 查询
@@ -75,6 +80,7 @@ def query_sql(conn=None, sql=None, params=None):
     if conn is None or sql is None or len(sql) == 0:
         return exec_error
     if debug_flag :
+        print(u'Query执行SQL：')
         print(sql)
     try:
         cursor = conn.cursor()
@@ -86,29 +92,21 @@ def query_sql(conn=None, sql=None, params=None):
     except sqlite3.Error as e:
         if debug_flag:
             print(u'执行查询SQL出现异常：\n' + e.args[0])
-            raise SqlError(u'查询出现异常')
+            raise e
         return None
 
 # 插入单条数据
-def insert_one_by_dataDict(conn=None, tableName=None, dataDict=None, callFun=None):
+def insert_one_by_dataDict_conditions(conn=None, tableName=None, dataDict=None, conditions=None, callFun=None):
     if dataDict is None or len(dataDict) == 0 or tableName is None or conn is None:
         return exec_error
-    columnList = []
-    dataList = []
-    for item in dataDict:
-        if type(item) == list:
-            columnList.append(item[0])
-            dataList.append(item[1])
-        else:
-            dataList.append(item)
     try:
-        sql = None
-        if len(columnList) == 0:
-            sql = u" insert into " + tableName + u" values ( " + u",".join(iter(dataList)) + u" )"
-        else:
-            sql = u" insert into " + tableName + u" ( " + u",".join(iter(columnList)) + u" ) values ( " + u",".join(
-                iter(dataList)) + u" )"
-        execute_state = execute_sql(conn, sql, None)
+        sql = SqlHelper(table=tableName, opt_type=SqlHelper.opt_types['insert'])
+        sql.set_columns_and_values(columns=dataDict.keys(), values=dataDict.values())
+        sql.add_conditions(conditions)
+        insert_sql = sql.get_sql()
+        if debug_flag:
+            print(insert_sql)
+        execute_state = execute_sql(conn, insert_sql, None)
         conn.commit()
         return execute_state
     except sqlite3.Error as e:
@@ -121,25 +119,17 @@ def insert_one_by_dataDict(conn=None, tableName=None, dataDict=None, callFun=Non
         callBack(callFun)
 
 # 插入单条数据
-def insert_one_by_fieldList(conn=None, tableName=None, fieldList=None, callFun=None):
-    if fieldList is None or len(fieldList) == 0 or tableName is None or conn is None:
+def insert_one_by_columns_values_conditions(conn=None, tableName=None, columns=None, values=None, conditions=None, callFun=None):
+    if values is None or len(values) == 0 or tableName is None or conn is None:
         return exec_error
-    columnList = []
-    dataList = []
-    for item in fieldList:
-        if type(item) == list:
-            columnList.append(item[0])
-            dataList.append(item[1])
-        else:
-            dataList.append(item)
     try:
-        sql = None
-        if len(columnList) == 0:
-            sql = u" insert into " + tableName + u" values ( " + u",".join(iter(dataList)) + u" )"
-        else:
-            sql = u" insert into " + tableName + u" ( " + u",".join(iter(columnList)) + u" ) values ( " + u",".join(
-                iter(dataList)) + u" )"
-        execute_state = execute_sql(conn, sql, None)
+        sql = SqlHelper(table=tableName, opt_type=SqlHelper.opt_types['insert'])
+        sql.set_columns_and_values(columns=columns, values=values)
+        sql.add_conditions(conditions)
+        insert_sql = sql.get_sql()
+        if debug_flag:
+            print(insert_sql)
+        execute_state = execute_sql(conn, insert_sql, None)
         conn.commit()
         return execute_state
     except sqlite3.Error as e:
@@ -152,7 +142,7 @@ def insert_one_by_fieldList(conn=None, tableName=None, fieldList=None, callFun=N
         callBack(callFun)
 
 # 批量插入
-def insert_data_many(conn, tableName, columns, dataItems, callFun=None):
+def insert_data_many(conn=None, tableName=None, columns=None, dataItems=None, callFun=None):
     if dataItems is None or len(dataItems) == 0 or tableName is None or conn is None:
         return exec_error
     values = u",".join(u"?" * len(dataItems[0]))
@@ -183,22 +173,14 @@ def delete_by_conditions(conn=None, tableName=None, conditions=None, callFun=Non
         callBack(callFun)
 
 
-def update_by_conditions(conn, tableName, dataItems, conditions, callFun=None):
-    if dataItems is None or len(dataItems) == 0 or tableName is None or conn is None:
+def update_by_conditions(conn=None, tableName=None, dataDict=None, conditions=None, callFun=None):
+    if dataDict is None or len(dataDict) == 0 or tableName is None or conn is None:
         return exec_error
-    updateColumns = ''
-    for item in dataItems:
-        value = dataItems.get(item)
-        if type(value) in (str, datetime, date):
-            updateColumns += item + "='" + value + "',"
-        else:
-            updateColumns += item + "=" + value + ","
-    updateColumns = updateColumns.rstrip(',')
-    sql = u'update ' + tableName + ' set ' + updateColumns
-    if conditions is not None:
-        sql += ' where ' + conditions
+    sql = SqlHelper(table=tableName, opt_type=SqlHelper.opt_types['update'], conditions=conditions)
+    sql.add_keyValues(dataDict)
+    sql_update = sql.get_sql()
     try:
-        return execute_sql(conn, sql, None)
+        return execute_sql(conn, sql_update, None)
     finally:
         callBack(callFun)
 
@@ -293,8 +275,17 @@ class SqlHelper:
 
     def add_keyValues(self, keyValues):
         keyValues = keyValues or []
-        if type(keyValues) != list: return
-        self.keyValues.extend(keyValues)
+        if len(keyValues) == 0: return
+        kvList = []
+        if type(keyValues) == dict and len(keyValues) > 0:
+            for key in keyValues:
+                kv = key + "=" + _to_sql_str(keyValues[key])
+                kvList.append(kv)
+        elif type(keyValues) == list:
+            kvList = keyValues
+        else:
+            return
+        self.keyValues.extend(kvList)
 
     def get_sql_columns(self):
         columns = u''
