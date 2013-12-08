@@ -70,20 +70,19 @@ class DBHelper(object):
                 if column in obj.__dict__ and isinstance(obj.__dict__[column], Field):
                     obj.__dict__[column].set_data_from_db(row[column])
 
-
     # 保存对象
     @staticmethod
     def save_obj(conn=None, obj=None):
         if obj is None or not isinstance(obj, Model):
             return exec_error
         tableName = obj._tableName
-        dataItems = []
+        fieldList = []
         columns_dict = obj.__dict__
         for column in columns_dict:
             field = columns_dict.get(column)
             if isinstance(field, Field):
-                dataItems.append((column, field.data))
-        return insert_data_one(obj.conn, tableName, dataItems)
+                fieldList.append((column, field.data))
+        return insert_one_by_fieldList(obj.conn, tableName, fieldList)
 
     # 删除对象
     @staticmethod
@@ -106,12 +105,32 @@ class DBHelper(object):
         return delete_by_conditions(obj.conn, tableName, conditions)
 
     # 根据条件删除
-    def deleteByConditions(conn=None,tableName=None, conditions=None, close_conn=False):
+    @staticmethod
+    def delete_by_conditions(conn=None,tableName=None, conditions=None, close_conn=False):
         try:
-            return delete_by_conditions(conn=conn, tableName, conditions)
+            return delete_by_conditions(conn=conn, tableName=tableName, conditions=conditions)
         finally:
             if close_conn:
                 conn.close()
+
+    # 更新
+    @staticmethod
+    def update_obj(conn=None, obj=None, conditions=None, by_primary_key=False):
+        if obj is None or (not by_primary_key and conditions is None):
+            return exec_error
+        conditions = conditions
+        if isinstance(obj, Model) and by_primary_key:
+            if obj._primaryKey is None or obj.__dict__[obj._primaryKey] is None:
+                return exec_error
+            conditions = obj._primaryKey + '=' + obj.__dict__[obj._primaryKey].data
+        elif isinstance(obj, Model) and not by_primary_key:
+            fields = obj.get_fields()
+            update_fields = {}
+            for field in fields:
+                if fields[field] is None: continue
+                update_fields[field] = fields[field]
+        return update_by_conditions(obj.conn, obj._tableName, update_fields, conditions)
+
 
 if  __name__ == '__main__':
     #DBHelper.insert_by_sql(conn=None, sql=None)
