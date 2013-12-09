@@ -1,8 +1,9 @@
 #coding=UTF-8
 __author__ = 'Administrator'
-from util.db.model.models import *
 from util.db.db_util import *
 import settings
+from util.db.model.models import Model
+from util.db.model.fields import Field
 
 class DBHelper(object):
 
@@ -111,8 +112,10 @@ class DBHelper(object):
     # 更新
     @staticmethod
     def update_obj(conn=None, obj=None, conditions=None, by_primary_key=False):
-        if obj is None or (not by_primary_key and conditions is None):
+        if obj is None :
             return exec_error
+        if not by_primary_key and conditions is None:
+            conditions = '1=1'
         conditions = conditions
         if isinstance(obj, Model) and by_primary_key:
             if obj._primaryKey is None or obj.__dict__[obj._primaryKey] is None:

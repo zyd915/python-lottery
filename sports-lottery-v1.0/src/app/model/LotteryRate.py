@@ -2,15 +2,13 @@
 
 __author__ = 'zhangyude'
 
-from util.db.model.models import *
-
-#概率总和基数
-rateTotalBase = 1000
+from util.db.model.fields import *
+from util.db.model.models import Model
 
 #球概率
 class LotteryRate(Model):
 
-    def __init__(self,type=ball_types['double_color_ball'], code=None, rate=None, terms=0):
+    def __init__(self,type=None, code=None, rate=None, terms=0):
 
         #类型
         self.type = IntegerField(name='type', comment=u'类型', data=code)

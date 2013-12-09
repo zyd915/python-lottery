@@ -1,9 +1,10 @@
 #coding=UTF-8
 __author__ = 'Administrator'
 
-from util.db.model.models import *
+from util.db.model.models import Model
 from util.csv.csv_reader import *
 from app.vo.ball import *
+from util.db.model.fields import *
 
 
 # 从txt文件中获取抽奖结果集

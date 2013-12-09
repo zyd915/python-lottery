@@ -121,18 +121,18 @@ def lotteryBallList(ballCount, ballList):
     return lotteryBalls
 
 # 抽红球
-def lotteryRedBallList(addCount,ballList):
-    if addCount > ball.red_ball_count_max :
-        addCount = ball.red_ball_count_max
-    elif addCount < ball.red_ball_count_min:
-        addCount = ball.red_ball_count_min
+def lotteryRedBallList(addCount=0, ballList=None, ball_type=ball.ball_types['double_color_ball']):
+    if addCount > ball.red_ball_count_max[ball_type] :
+        addCount = ball.red_ball_count_max[ball_type]
+    elif addCount < ball.red_ball_count_min[ball_type]:
+        addCount = ball.red_ball_count_min[ball_type]
     return lotteryBallList(addCount, ballList)
 
 # 抽蓝球
-def lotteryBlueBallList(addCount,ballList):
-    if addCount > ball.blue_ball_count_max :
-        addCount = ball.blue_ball_count_max
-    elif addCount < ball.blue_ball_count_min:
-        addCount = ball.blue_ball_count_min
+def lotteryBlueBallList(addCount=0, ballList=None, ball_type=ball.ball_types['double_color_ball']):
+    if addCount > ball.blue_ball_count_max[ball_type] :
+        addCount = ball.blue_ball_count_max[ball_type]
+    elif addCount < ball.blue_ball_count_min[ball_type]:
+        addCount = ball.blue_ball_count_min[ball_type]
     return lotteryBallList(addCount, ballList)
 

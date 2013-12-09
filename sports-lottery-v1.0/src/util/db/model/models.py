@@ -1,10 +1,8 @@
 #coding=UTF-8
 
 __author__ = 'zhangyude'
-from util.db.model.fields import *
-from util.db.db_util import *
-from settings import *
-from util.db.model.db_helper import *
+from util.db.model.fields import Field
+from util.db.model.db_helper import DBHelper
 
 # 模型基类
 class Model(DBHelper):
@@ -33,7 +31,7 @@ class Model(DBHelper):
         if self._sql_create is not None:
             sql_create = self._sql_create
         else:
-            sql_create = 'create table ' + self._tableName + '(\n'
+            sql_create = u'create table ' + self._tableName + '(\n'
             fields = self.get_fields()
             for field in fields.values():
                 sql_create += ' ' + field.get_create_field_sql() + ', \n'
@@ -108,60 +106,10 @@ class Model(DBHelper):
 
 
 
-    def update(self, close_conn=False):
+    def update(self, conditions=None, close_conn=False):
         self.get_conn()
-        tableName = self._tableName
-        conditions = None
-        if self._primaryKey is not None and self.__dict__[self._primaryKey] is not None:
-            conditions = self._primaryKey + '=' + self.__dict__[self._primaryKey].data
-        dataItems = []
-        columns_dict = self.__dict__
         try:
-            return update_by_conditions(self.conn, tableName, dataItems, conditions)
+            return self.update_obj(conn=self.conn, obj=self, conditions=conditions)
         finally:
             self.close_conn(close_conn)
 
-    def updateByConditions(self, conditions, close_conn=False):
-        self.get_conn()
-        tableName = self._tableName or self._name
-        dataItems = []
-        columns_dict = self.__dict__
-        for column in columns_dict:
-            if isinstance(columns_dict.get(column), Field):
-                dataItems.append((column, columns_dict.get(column).data))
-        try:
-            return update_by_conditions(self.conn, tableName, dataItems, conditions)
-        finally:
-            self.close_conn(close_conn)
-
-    def loadDataByPrimaryValue(self, primaryValue=None, close_conn=False):
-        self.get_conn()
-        tableName = self._tableName or self._name
-        conditions = None
-        if self._primaryKey is not None and self.__dict__[self._primaryKey] is not None:
-            conditions = self._primaryKey + '=' + primaryValue
-        if conditions is not None:
-            sql = u'select * from ' + tableName + u' where ' + conditions + u'limit 1'
-            try:
-                cursor = query_sql(self.conn, sql)
-                if cursor is None:
-                    return None
-                elif len(cursor) > 0:
-                    row = cursor[0]
-                    self._loadFieldsValues(row)
-            except:
-                if debug_flag:
-                    raise SqlError(u'加载数据出现异常')
-                pass
-        else:
-            pass
-
-    def _loadFieldsValues(self, row):
-        for column in row.keys():
-            self._loadFieldValue(column, row[column])
-
-    def _loadFieldValue(self, column, data):
-        if column is None or data is None:
-            return
-        if column in self.__dict__ and isinstance(self.__dict__[column], Field):
-            self.__dict__[column].set_data_from_db(data)

@@ -3,21 +3,14 @@
 __author__ = 'zhangyude'
 
 import sqlite3
-from datetime import *
-from util.exceptions import *
-from settings import *
+import datetime
+import settings
 
 
 exec_success = 1
 exec_error = 2
 
-
-class column_types:
-    cInt = "integer"
-    cLong = "integer"
-    cFloat = "real"
-    cStr = "text"
-    cBuffer = "blob"
+debug_flag = settings.debug_flag
 
 def callBack(call):
     if call is not None and callable(call):
@@ -189,7 +182,7 @@ def to_db_condition(name=None, value=None):
     if name is None or value is None:
         return None
     condition = name
-    if type(value) in (str, datetime, date):
+    if type(value) in (str, datetime.datetime, datetime.date):
         value = "'" + value + "'"
     condition +='=' + _to_sql_str(value)
     return condition

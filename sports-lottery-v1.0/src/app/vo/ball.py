@@ -17,19 +17,30 @@ color_red = 1
 #篮球
 color_blue = 2
 
-#红球的号码区间
-code_red_range = range(1, 33, 1)
-#篮球的号码区间
-code_blue_range = range(1, 16, 1)
-
 #红球个数
-red_ball_count_min = 6
+red_ball_count_min = {
+    ball_types['double_color_ball']:6,
+    ball_types['big_happy_ball']:5,
+    ball_types['seven_happy_ball']:7
+}
 # 红球加注最大值
-red_ball_count_max = 20
+red_ball_count_max = {
+    ball_types['double_color_ball']:20,
+    ball_types['big_happy_ball']:35,
+    ball_types['seven_happy_ball']:24
+}
 # 篮球个数
-blue_ball_count_min = 1
+blue_ball_count_min = {
+    ball_types['double_color_ball']:1,
+    ball_types['big_happy_ball']:2,
+    ball_types['seven_happy_ball']:0
+}
 # 篮球加注
-blue_ball_count_max = 16
+blue_ball_count_max = {
+    ball_types['double_color_ball']:16,
+    ball_types['big_happy_ball']:12,
+    ball_types['seven_happy_ball']:0
+}
 
 #===========双色球model模型===========#
 class Ball(object):
