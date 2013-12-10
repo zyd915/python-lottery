@@ -2,9 +2,6 @@
 
 __author__ = 'zhangyude'
 
-#概率总和基数
-rateTotalBase = 1000
-
 #球概率
 class Rate(object):
 

@@ -2,7 +2,7 @@
 __author__ = 'Administrator'
 import os
 from util.path.path_util import *
-from app.vo.ball import *
+import app.config as config
 
 settings_path = os.path.dirname(__file__)
 project_root_path = get_parent_path_by_level(settings_path,1)
@@ -13,9 +13,9 @@ data_file_dir_path = project_root_path + '/resources/data_files'
 
 # 抽奖记录文件
 lottery_file_paths = {
-    ball_types['double_color_ball']:data_file_dir_path + '/lottery_double_color.csv',
-    ball_types['big_happy_ball']:data_file_dir_path + '/lottery_big_happy.csv',
-    ball_types['seven_happy_ball']:data_file_dir_path + '/lottery_seven_happy.csv'
+    config.ball_types['double_color_ball']:data_file_dir_path + '/lottery_double_color.csv',
+    config.ball_types['big_happy_ball']:data_file_dir_path + '/lottery_big_happy.csv',
+    config.ball_types['seven_happy_ball']:data_file_dir_path + '/lottery_seven_happy.csv'
 }
 
 # debug状态值

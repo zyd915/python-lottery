@@ -5,24 +5,97 @@ __author__ = 'zhangyude'
 # test
 from app.service import lottery_util
 from app.vo.rate import Rate
+from app.vo.ball import Ball
+import app.config as config
 
-class Lottery(object):
-
-    # 红色球基数
-    redBallCount = 6
-    # 蓝色球基数
-    blueBallCount = 1
-    # 红球概率列表
-    redRateList = [33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
-                   33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
-                   33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
-                   33, 33, 33]
-    # 篮球概率列表
-    blueRateList = [16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-                    16, 16, 16, 16, 16, 16, ]
+class LotteryController(object):
 
     def __init__(self):
        object.__init__(self)
+
+    # 根据球类型加载球列表: (list[红球]， list[篮球])
+    def load_ball_list(self, ball_type=None):
+
+        """
+        @param ball_type: 球类型【双色球，大乐透，双色球】
+        """
+        pass
+
+    # 抽奖（支持胆拖式）
+    def lottery(self, ball_type=config.ball_types['double_color_ball'], ball_count=None,
+                positive_red_balls=None, positive_red_balls_count=None,
+                positive_blue_balls=None, positive_blue_balls_count=None):
+        """
+        @param ball_type: 球类型
+        @param ball_count: 球个数
+        @param positive_red_balls: 认为红球可能出现的号码
+        @param positive_red_balls_count: 认为红球可能出现的号码的个数
+        @param positive_blue_balls: 认为篮球可能出现的号码
+        @param positive_blue_balls_count: 认为篮球可能出现的号码的个数
+        """
+        red_ball_count = config.red_ball_count_min[ball_type]
+
+        pass
+
+    def _validator_ball_code(self, select_code_list=None, ball_list=None):
+        """
+        验证待选球号码是否在供选球号码列表里面
+        @param select_code_list: 待选球号码列表
+        @param ball_list: 供选球列表
+        @return:
+        """
+        if select_code_list is None or len(select_code_list) == 0 or ball_list is None or len(ball_list) == 0:
+            return False
+        for select_code in select_code_list:
+            has = False
+            for ball in ball_list :
+                if isinstance(ball, Ball) and ball.code == select_code:
+                    has = True
+                    break
+            if not has:
+                return False
+        return True
+
+    def _validator_ball_count(self, ball_type=None, color_type=None, count=0, isMax=False):
+        """
+        验证球个数是否超过供选个数范围
+        @param ball_type:
+        @param color_type:
+        @param count:
+        @param isMax:
+        @return:
+        """
+        if ball_type not in config.ball_types.values() or color_type not in config.ball_color_types.values():
+            return False
+
+        if color_type == config.color_red:
+            if isMax:
+                if count > config.red_ball_count_max[ball_type]:
+                    return False
+            else:
+                if count < config.red_ball_count_min[ball_type]:
+                    return False
+        elif color_type == config.color_blue:
+            if isMax:
+                if count > config.blue_ball_count_max[ball_type]:
+                    return False
+            else:
+                if count < config.blue_ball_count_min[ball_type]:
+                    return False
+
+        return True
+    # 导入抽奖结果到数据库中
+    @staticmethod
+    def init_lottery_result_to_db(ball_type=None):
+
+        pass
+
+    # 初始化抽奖概率到数据库中
+    @staticmethod
+    def init_lottery_rate_to_db(terms=None):
+
+        pass
+
 
 def main():
     redBallRateList = []

@@ -1,6 +1,7 @@
 #coding=UTF-8
 from app.vo import ball, rate
 from util.collection import collection_util
+import app.config as config
 
 __author__ = 'zhangyude'
 
@@ -27,7 +28,7 @@ def initRedBallList(rateList):
     ballList = []
     for i in range(len(rateList)):
         rate = _getRateByCode(i+1, rateList)
-        ballList.append(ball.Ball(ball.color_red, i+1, rate))
+        ballList.append(ball.Ball(config.color_red, i+1, rate))
 
     return ballList
 
@@ -36,7 +37,7 @@ def initBlueBallList(rateList):
     ballList = []
     for i in range(len(rateList)):
         rate = _getRateByCode(i+1, rateList)
-        ballList.append(ball.Ball(ball.color_blue, i+1, rate))
+        ballList.append(ball.Ball(config.color_blue, i+1, rate))
 
     return ballList
 
@@ -72,8 +73,8 @@ def _resetRateRangeList(ballList):
 
     #重置概率区段
     for item in tempRateBallList:
-        item.rateStart = round(item.rateStart/(rateTotal*1.0), 4)* rate.rateTotalBase
-        item.rateEnd = round(item.rateEnd/(rateTotal*1.0), 4)* rate.rateTotalBase
+        item.rateStart = round(item.rateStart/(rateTotal*1.0), 4)* config.rateTotalBase
+        item.rateEnd = round(item.rateEnd/(rateTotal*1.0), 4)* config.rateTotalBase
 
     #重置球列表
     ballList = tempRateBallList
@@ -87,7 +88,7 @@ def _lotteryOneBall(ballList):
     # 1、先重置概率区段
     ballList = _resetRateRangeList(ballList)
     # 2、取一个随机值
-    rateValue = random.randrange(1, rate.rateTotalBase)
+    rateValue = random.randrange(1, config.rateTotalBase)
     ball = None
     for item in ballList:
         # 根据概率区段获取所对应的球
@@ -121,18 +122,18 @@ def lotteryBallList(ballCount, ballList):
     return lotteryBalls
 
 # 抽红球
-def lotteryRedBallList(addCount=0, ballList=None, ball_type=ball.ball_types['double_color_ball']):
-    if addCount > ball.red_ball_count_max[ball_type] :
-        addCount = ball.red_ball_count_max[ball_type]
-    elif addCount < ball.red_ball_count_min[ball_type]:
-        addCount = ball.red_ball_count_min[ball_type]
+def lotteryRedBallList(addCount=0, ballList=None, ball_type=config.ball_types['double_color_ball']):
+    if addCount > config.red_ball_count_max[ball_type] :
+        addCount = config.red_ball_count_max[ball_type]
+    elif addCount < config.red_ball_count_min[ball_type]:
+        addCount = config.red_ball_count_min[ball_type]
     return lotteryBallList(addCount, ballList)
 
 # 抽蓝球
-def lotteryBlueBallList(addCount=0, ballList=None, ball_type=ball.ball_types['double_color_ball']):
-    if addCount > ball.blue_ball_count_max[ball_type] :
-        addCount = ball.blue_ball_count_max[ball_type]
-    elif addCount < ball.blue_ball_count_min[ball_type]:
-        addCount = ball.blue_ball_count_min[ball_type]
+def lotteryBlueBallList(addCount=0, ballList=None, ball_type=config.ball_types['double_color_ball']):
+    if addCount > config.blue_ball_count_max[ball_type] :
+        addCount = config.blue_ball_count_max[ball_type]
+    elif addCount < config.blue_ball_count_min[ball_type]:
+        addCount = config.blue_ball_count_min[ball_type]
     return lotteryBallList(addCount, ballList)
 

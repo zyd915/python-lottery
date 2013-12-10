@@ -3,9 +3,8 @@ __author__ = 'Administrator'
 
 from util.db.model.models import Model
 from util.csv.csv_reader import *
-from app.vo.ball import *
 from util.db.model.fields import *
-
+import app.config as config
 
 # 从txt文件中获取抽奖结果集
 # 格式：双色球
@@ -15,34 +14,25 @@ from util.db.model.fields import *
 # 七乐彩
 # 2013138,_07_09_13_16_17_26_28,_05
 
-columns_of_double_color = ['term', 'red1', 'red2', 'red3', 'red4', 'red5', 'red6','blue1']
-columns_of_big_happy = ['term', 'red1', 'red2', 'red3', 'red4', 'red5', 'blue1','blue2']
-columns_of_seven_happy = ['term', 'red1', 'red2', 'red3', 'red4', 'red5', 'red6','red7','blue1']
-
-columns_of_type = {
-    ball_types['double_color_ball']:columns_of_double_color,
-    ball_types['big_happy_ball']:columns_of_big_happy,
-    ball_types['seven_happy_ball']:columns_of_seven_happy
-}
 
 # 解析结果回调函数
 def parseItemFun(**kwargs):
     type = kwargs['type']
     fields = kwargs['fields']
-    if type is None or type not in ball_types.values() or fields is None or len(fields) == 0:
+    if type is None or type not in config.ball_types.values() or fields is None or len(fields) == 0:
         return None
     columns = None
     red_balls = None
     blue_balls = None
-    columns = columns_of_type[type]
+    columns = config.columns_of_type[type]
     term = fields[columns[0]]
-    if type == ball_types['double_color_ball']:
+    if type == config.ball_types['double_color_ball']:
         red_balls = [fields[ball] for ball in fields if ball in (columns[1:-1])]
         blue_balls = fields[columns[-1]]
-    elif type == ball_types['big_happy_ball']:
+    elif type == config.ball_types['big_happy_ball']:
         red_balls = [fields[ball] for ball in fields if ball in (columns[1:-2])]
         blue_balls = [fields[ball] for ball in fields if ball in (columns[-2:])]
-    elif type == ball_types['seven_happy_ball']:
+    elif type == config.ball_types['seven_happy_ball']:
         red_balls = [fields[ball] for ball in fields if ball in (columns[1:-1])]
         blue_balls = fields[columns[-1]]
     return (term, red_balls, blue_balls)
@@ -52,10 +42,10 @@ def conditionsFun():
     return True
 
 #
-def load_from_csv(type=ball_types['double_color_ball'],csv_file_path=None):
-    if csv_file_path is None or type not in ball_types.values():
+def load_from_csv(type=config.ball_types['double_color_ball'],csv_file_path=None):
+    if csv_file_path is None or type not in config.ball_types.values():
         return None
-    columns = columns_of_type[type]
+    columns = config.columns_of_type[type]
     resultFile = open(csv_file_path)
     list = parseItemByDictRow(
         iteratorObj=resultFile,
@@ -91,9 +81,9 @@ class LotteryResult(Model):
 
 
 if __name__ == '__main__':
-    list = load_from_csv(type=ball_types['double_color_ball'], csv_file_path='c:/lottery.csv')
+    list = load_from_csv(type=config.ball_types['double_color_ball'], csv_file_path='c:/lottery.csv')
 
     for item in list:
         print(item)
 
-    print(columns_of_type)
+    print(config.columns_of_type)
