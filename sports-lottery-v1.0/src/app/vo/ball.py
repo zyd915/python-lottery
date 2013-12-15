@@ -6,10 +6,7 @@ __author__ = 'zhangyude'
 #===========双色球model模型===========#
 class Ball(object):
 
-    def __init__(self, color, code, rate):
-
-        #类型
-        self.type = type
+    def __init__(self, color=None, code=None, rate=None):
 
         #球色
         self.color = color
@@ -28,6 +25,11 @@ class Ball(object):
 
         #有效
         self.enable = True
+
+    def __eq__(self, other):
+        if other is None or not isinstance(other, Ball):
+            return False
+        return self.code == other.code
 
     #失效
     def disable(self):

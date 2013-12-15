@@ -7,6 +7,7 @@ from app.service import lottery_util
 from app.vo.rate import Rate
 from app.vo.ball import Ball
 import app.config as config
+from util.collection.collection_util import *
 
 class LotteryController(object):
 
@@ -22,20 +23,66 @@ class LotteryController(object):
         pass
 
     # 抽奖（支持胆拖式）
-    def lottery(self, ball_type=config.ball_types['double_color_ball'], ball_count=None,
-                positive_red_balls=None, positive_red_balls_count=None,
-                positive_blue_balls=None, positive_blue_balls_count=None):
+    # 1、单注 参数：None
+    # 2、复式（多注）参数：球数
+    # 3、胆拖（胆码列表 + 拖码个数）参数：胆码球列表 + 拖码球个数
+    # 4、定胆杀号（胆码球号列表+杀号列表+拖码个数）
+    def lottery(self, ball_type=None, color_type=None, ball_count=0,
+                positive_ball_list=None, possible_ball_list=None,
+                possible_ball_count=0, not_possible_list=None):
         """
         @param ball_type: 球类型
+        @param color_type: 球颜色
         @param ball_count: 球个数
-        @param positive_red_balls: 认为红球可能出现的号码
-        @param positive_red_balls_count: 认为红球可能出现的号码的个数
-        @param positive_blue_balls: 认为篮球可能出现的号码
-        @param positive_blue_balls_count: 认为篮球可能出现的号码的个数
+        @param positive_ball_list: 胆码列表
+        @param possible_ball_list: 拖码列表
+        @param possible_ball_count: 拖码个数
+        @param not_possible_list: 杀号列表
         """
-        red_ball_count = config.red_ball_count_min[ball_type]
+        if ball_type not in config.ball_types.values() or color_type not in config.ball_color_types.values():
+            return None
+
+        min_red_ball_count = config.red_ball_count_min[ball_type]
+        max_red_ball_count = config.red_ball_count_max[ball_type]
+        min_blue_ball_count = config.blue_ball_count_min[ball_type]
+        max_blue_ball_count = config.blue_ball_count_max[ball_type]
+
+        red_ball_list, blue_ball_list = self.load_ball_list(ball_type=ball_type)
+        # 验证球个数
+        lottery_ball_count = len(positive_ball_list or []) + possible_ball_count
+        lottery_ball_count = ball_count or lottery_ball_count
+        if not self._validator_ball_count(ball_type=ball_type, color_type=color_type, count=lottery_ball_count):
+            return None
+        # 验证球号码
+        if positive_ball_list is not None and not self._validator_ball_code(select_code_list=positive_ball_list, ball_type=ball_type):
+            return None
+        if possible_ball_list is not None and not self._validator_ball_code(select_code_list=possible_ball_list, ball_type=ball_type):
+            return None
+        if not_possible_list is not None and not self._validator_ball_code(select_code_list=not_possible_list, ball_type=ball_type):
+            return None
+
+        lottery_code_list = []
+        disable_ball_list = []
+        # 胆码
+        lottery_code_list.extend(positive_ball_list or [])
+        disable_ball_list = [Ball(code=item) for item in lottery_code_list]
+        if not_possible_list is not None:
+            disable_ball_list.extend([Ball(code=item) for item in not_possible_list])
+        # 拖码
+        if lottery_ball_count > len(lottery_code_list) and possible_ball_list is not None and possible_ball_count > 0:
+            possible_ball_codes = [ball.code for ball in lottery_util.lotteryBallList(possible_ball_count, possible_ball_list)]
+            lottery_code_list.extend(possible_ball_codes)
+            disable_ball_list.extend([Ball(code=item) for item in possible_ball_list])
 
         pass
+
+    # 过滤
+    def _filter(self, filter_code_list=None, ball_list=None):
+        if filter_code_list is None or ball_list is None:
+            return
+        filter_ball_list = [Ball(code=item.code) for item in filter_code_list]
+        return differ_section(filter_ball_list, ball_list)
+
 
     def _validator_ball_code(self, select_code_list=None, ball_list=None):
         """
@@ -56,7 +103,7 @@ class LotteryController(object):
                 return False
         return True
 
-    def _validator_ball_count(self, ball_type=None, color_type=None, count=0, isMax=False):
+    def _validator_ball_count(self, ball_type=None, color_type=None, count=0):
         """
         验证球个数是否超过供选个数范围
         @param ball_type:
@@ -69,21 +116,14 @@ class LotteryController(object):
             return False
 
         if color_type == config.color_red:
-            if isMax:
-                if count > config.red_ball_count_max[ball_type]:
-                    return False
-            else:
-                if count < config.red_ball_count_min[ball_type]:
-                    return False
+            if count > config.red_ball_count_max[ball_type] or count < config.red_ball_count_min[ball_type]:
+                return False
         elif color_type == config.color_blue:
-            if isMax:
-                if count > config.blue_ball_count_max[ball_type]:
-                    return False
-            else:
-                if count < config.blue_ball_count_min[ball_type]:
-                    return False
+            if count > config.blue_ball_count_max[ball_type] or count < config.blue_ball_count_min[ball_type]:
+                return False
 
         return True
+
     # 导入抽奖结果到数据库中
     @staticmethod
     def init_lottery_result_to_db(ball_type=None):
