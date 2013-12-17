@@ -15,11 +15,12 @@ class LotteryController(object):
        object.__init__(self)
 
     # 根据球类型加载球列表: (list[红球]， list[篮球])
-    def load_ball_list(self, ball_type=None):
+    def load_ball_list(self, ball_type=None, color_type=None):
 
         """
         @param ball_type: 球类型【双色球，大乐透，双色球】
         """
+
         pass
 
     # 抽奖（支持胆拖式）
@@ -42,12 +43,7 @@ class LotteryController(object):
         if ball_type not in config.ball_types.values() or color_type not in config.ball_color_types.values():
             return None
 
-        min_red_ball_count = config.red_ball_count_min[ball_type]
-        max_red_ball_count = config.red_ball_count_max[ball_type]
-        min_blue_ball_count = config.blue_ball_count_min[ball_type]
-        max_blue_ball_count = config.blue_ball_count_max[ball_type]
-
-        red_ball_list, blue_ball_list = self.load_ball_list(ball_type=ball_type)
+        ball_list = self.load_ball_list(ball_type=ball_type, color_type=color_type)
         # 验证球个数
         lottery_ball_count = len(positive_ball_list or []) + possible_ball_count
         lottery_ball_count = ball_count or lottery_ball_count
@@ -62,19 +58,27 @@ class LotteryController(object):
             return None
 
         lottery_code_list = []
-        disable_ball_list = []
+        disable_code_list = []
         # 胆码
         lottery_code_list.extend(positive_ball_list or [])
-        disable_ball_list = [Ball(code=item) for item in lottery_code_list]
+        disable_code_list = [code for code in lottery_code_list]
+        # 杀号
         if not_possible_list is not None:
-            disable_ball_list.extend([Ball(code=item) for item in not_possible_list])
+            disable_code_list.extend([code for code in not_possible_list])
         # 拖码
         if lottery_ball_count > len(lottery_code_list) and possible_ball_list is not None and possible_ball_count > 0:
-            possible_ball_codes = [ball.code for ball in lottery_util.lotteryBallList(possible_ball_count, possible_ball_list)]
-            lottery_code_list.extend(possible_ball_codes)
-            disable_ball_list.extend([Ball(code=item) for item in possible_ball_list])
+            lottery_code_list.extend([ball.code for ball in lottery_util.lotteryBallList(possible_ball_count, possible_ball_list)])
+            disable_code_list.extend([code for code in possible_ball_list])
+        elif lottery_ball_count > len(lottery_code_list) and possible_ball_list is None and possible_ball_count > 0:
+            filter_to_lottery_ball_list = self._filter(filter_code_list=disable_code_list, ball_list=ball_list)
+            lottery_count = lottery_ball_count - len(lottery_code_list)
+            lottery_code_list.extend([ball.code for ball in lottery_util.lotteryBallList(lottery_count, filter_to_lottery_ball_list)])
 
-        pass
+        # 复式机选
+        if len(lottery_code_list) == 0 and ball_count > 0:
+            lottery_code_list.extend([ball.code for ball in lottery_util.lotteryBallList(ball_count, ball_list)])
+
+        return lottery_code_list
 
     # 过滤
     def _filter(self, filter_code_list=None, ball_list=None):
