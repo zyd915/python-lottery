@@ -9,19 +9,28 @@ from app.vo.ball import Ball
 import app.config as config
 from util.collection.collection_util import *
 
+# 多实例运行
 class LotteryController(object):
 
     def __init__(self):
        object.__init__(self)
 
-    # 根据球类型加载球列表: (list[红球]， list[篮球])
+    # 根据球类型加载球列表
     def load_ball_list(self, ball_type=None, color_type=None):
 
         """
         @param ball_type: 球类型【双色球，大乐透，双色球】
+        @param color_type: 球颜色【红球，蓝球】
         """
 
         pass
+
+    # 获取概率列表
+    def get_rate_list(self, ball_type=None, color_type=None):
+        if ball_type is None or color_type is None:
+            return None
+
+
 
     # 抽奖（支持胆拖式）
     # 1、单注 参数：None

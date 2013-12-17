@@ -8,10 +8,13 @@ from util.db.model.models import Model
 #球概率
 class LotteryRate(Model):
 
-    def __init__(self,type=None, code=None, rate=None, terms=0):
+    def __init__(self,ball_type=None, color_type=None, code=None, rate=None, terms=0):
 
-        #类型
-        self.type = IntegerField(name='type', comment=u'类型', data=code)
+        #球类型
+        self.ball_type = IntegerField(name='ball_type', comment=u'球类型', data=ball_type)
+
+        #球颜色
+        self.color_type = IntegerField(name='color_type', comment=u'球颜色', data=color_type)
 
         #球号
         self.code = IntegerField(name='code', comment=u'球号', blank=False, data=code)

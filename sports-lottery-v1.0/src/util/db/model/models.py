@@ -32,11 +32,63 @@ class DBHelper(object):
             if cursor is not None :
                 obj = ObjType()
                 row = cursor.fetchone()
-                DBHelper.load_obj_field(row, obj)
-            return obj
+                DBHelper.load_fields_from_row(row, obj)
+                return obj
         except Exception as e:
             if settings.debug_flag:
                 print(u'DBHelper.fetch_one_by_sql error:' + e.args[0])
+            return None
+
+    # 查询一个
+    @staticmethod
+    def fetch_one_by_obj_attributes(conn=None, obj=None):
+        if obj is None or not isinstance(obj, Model):
+            return None
+        try:
+            fields = obj.get_fields(justData=True, filterNone=True)
+            sql_helper = SqlHelper(table=obj._tableName, opt_type=SqlHelper.opt_types['select'])
+            if fields is not None and len(fields) > 0:
+                for field in fields:
+                    sql_helper.add_condition(key=field, value=fields[field])
+            sql = sql_helper.get_sql()
+            cursor = query_sql(conn=conn, sql=sql, params=None)
+            if cursor is not None :
+                row = cursor.fetchone()
+                DBHelper.load_fields_from_row(row, obj)
+                return obj
+        except Exception as e:
+            if settings.debug_flag:
+                print(u'DBHelper.fetch_one_by_sql error:' + e.args[0])
+            return None
+
+    # 查询多个
+    @staticmethod
+    def fetch_list_by_obj_attributes(conn=None, obj=None, size=None):
+        if obj is None or not isinstance(obj, Model):
+            return None
+        try:
+            fields = obj.get_fields(justData=True, filterNone=True)
+            sql_helper = SqlHelper(table=obj._tableName, opt_type=SqlHelper.opt_types['select'])
+            if fields is not None and len(fields) > 0:
+                for field in fields:
+                    sql_helper.add_condition(key=field, value=fields[field])
+            sql = sql_helper.get_sql()
+            cursor = query_sql(conn=conn, sql=sql, params=None)
+            if cursor is not None and cursor.rowcount > 0:
+                list = []
+                rows = None
+                if size is not None:
+                    rows = cursor.fetchmany(size=size)
+                else:
+                    rows = cursor.fetchall()
+                for row in rows:
+                    item = type(obj)()
+                    DBHelper.load_fields_from_row(row, item)
+                    list.append(item)
+                return list
+        except Exception as e:
+            if settings.debug_flag:
+                print(u'DBHelper.fetch_list_by_sql error:' + e.args[0])
             return None
 
     # 查询多个
@@ -55,9 +107,9 @@ class DBHelper(object):
                     rows = cursor.fetchall()
                 for row in rows:
                     obj = ObjType()
-                    DBHelper.load_obj_field(row, obj)
+                    DBHelper.load_fields_from_row(row, obj)
                     list.append(obj)
-            return list
+                return list
         except Exception as e:
             if settings.debug_flag:
                 print(u'DBHelper.fetch_list_by_sql error:' + e.args[0])
@@ -85,7 +137,7 @@ class DBHelper(object):
     def delete_obj(conn=None, obj=None, by_primary_key=False):
         if obj is None or not isinstance(obj, Model):
             return exec_error
-        tableName = obj._tableName or obj._name
+        tableName = obj._tableName
         conditions = ""
         if by_primary_key:
             if obj._primaryKey is not None and obj.__dict__[obj._primaryKey] is not None:
