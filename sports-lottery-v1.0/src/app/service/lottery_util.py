@@ -23,21 +23,14 @@ def _getIndexByCode(code, ballList):
             return i
     return -1
 
-#初始化红球列表
-def initRedBallList(rateList):
+#初始化球列表
+def initBallList(rateList=None, color_type=None):
+    if rateList is None or color_type not in config.ball_color_types.values():
+        return None
     ballList = []
     for i in range(len(rateList)):
         rate = _getRateByCode(i+1, rateList)
-        ballList.append(ball.Ball(config.color_red, i+1, rate))
-
-    return ballList
-
-#初始化篮球球列表
-def initBlueBallList(rateList):
-    ballList = []
-    for i in range(len(rateList)):
-        rate = _getRateByCode(i+1, rateList)
-        ballList.append(ball.Ball(config.color_blue, i+1, rate))
+        ballList.append(ball.Ball(color_type, i+1, rate))
 
     return ballList
 

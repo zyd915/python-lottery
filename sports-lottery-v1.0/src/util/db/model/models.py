@@ -125,12 +125,12 @@ class DBHelper(object):
 
     # 保存对象
     @staticmethod
-    def save_obj(conn=None, obj=None):
+    def save_obj(conn=None, obj=None, conditions=None):
         if obj is None or not isinstance(obj, Model):
             return exec_error
         tableName = obj._tableName
         fieldList = obj.get_fields(justData=True, filterNone=True)
-        return insert_one_by_dataDict_conditions(conn=obj.conn, tableName=tableName, dataDict=fieldList)
+        return insert_one_by_dataDict_conditions(conn=obj.conn, tableName=tableName, dataDict=fieldList, conditions=conditions)
 
     # 删除对象
     @staticmethod
@@ -264,10 +264,10 @@ class Model(DBHelper):
                 self._columns.append(column)
         return self._columns
 
-    def save(self, close_conn=False):
+    def save(self, close_conn=False, conditions=None):
         self.get_conn()
         try:
-            return self.save_obj(conn=self.conn, obj=self)
+            return self.save_obj(conn=self.conn, obj=self, conditions=conditions)
         finally:
             self.close_conn(close_conn)
 

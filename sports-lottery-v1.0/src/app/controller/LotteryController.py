@@ -8,6 +8,7 @@ from app.vo.rate import Rate
 from app.vo.ball import Ball
 import app.config as config
 from util.collection.collection_util import *
+from app.service.LotteryService import *
 
 # 多实例运行
 class LotteryController(object):
@@ -16,20 +17,19 @@ class LotteryController(object):
        object.__init__(self)
 
     # 根据球类型加载球列表
-    def load_ball_list(self, ball_type=None, color_type=None):
-
+    def load_ball_list(self, ball_type=None, color_type=None, terms=0):
         """
         @param ball_type: 球类型【双色球，大乐透，双色球】
         @param color_type: 球颜色【红球，蓝球】
         """
-
-        pass
+        rate_list = self.get_rate_list(ball_type=ball_type, color_type=color_type, terms=terms)
+        return lottery_util.initBallList(rateList=rate_list, color_type=color_type)
 
     # 获取概率列表
-    def get_rate_list(self, ball_type=None, color_type=None):
+    def get_rate_list(self, ball_type=None, color_type=None, terms=0):
         if ball_type is None or color_type is None:
             return None
-
+        return get_rate_list_by_ballType_and_colorType_and_terms(ball_type=ball_type, color_type=color_type, terms=terms)
 
 
     # 抽奖（支持胆拖式）
@@ -37,7 +37,7 @@ class LotteryController(object):
     # 2、复式（多注）参数：球数
     # 3、胆拖（胆码列表 + 拖码个数）参数：胆码球列表 + 拖码球个数
     # 4、定胆杀号（胆码球号列表+杀号列表+拖码个数）
-    def lottery(self, ball_type=None, color_type=None, ball_count=0,
+    def lottery(self, ball_type=None, color_type=None, ball_count=0, terms=0,
                 positive_ball_list=None, possible_ball_list=None,
                 possible_ball_count=0, not_possible_list=None):
         """
@@ -52,7 +52,7 @@ class LotteryController(object):
         if ball_type not in config.ball_types.values() or color_type not in config.ball_color_types.values():
             return None
 
-        ball_list = self.load_ball_list(ball_type=ball_type, color_type=color_type)
+        ball_list = self.load_ball_list(ball_type=ball_type, color_type=color_type, terms=terms)
         # 验证球个数
         lottery_ball_count = len(positive_ball_list or []) + possible_ball_count
         lottery_ball_count = ball_count or lottery_ball_count
@@ -139,9 +139,8 @@ class LotteryController(object):
 
     # 导入抽奖结果到数据库中
     @staticmethod
-    def init_lottery_result_to_db(ball_type=None):
-
-        pass
+    def init_lottery_result_to_db(ball_type=None, result_csv_file_path=None):
+        init_lottery_result_to_db(ball_type=ball_type, result_csv_file_path=result_csv_file_path)
 
     # 初始化抽奖概率到数据库中
     @staticmethod
@@ -205,8 +204,8 @@ def main():
     blueBallRateList.append(Rate(15, 3))
     blueBallRateList.append(Rate(16, 8))
 
-    initRedBalls = lottery_util.initRedBallList(redBallRateList)
-    initBlueBalls = lottery_util.initBlueBallList(blueBallRateList)
+    initRedBalls = lottery_util.initBallList(rateList=redBallRateList, color_type=config.color_red)
+    initBlueBalls = lottery_util.initBallList(rateList=blueBallRateList, color_type=config.color_blue)
 
     for i in range(35):
         lotteryRedBalls = lottery_util.lotteryRedBallList(6, initRedBalls)

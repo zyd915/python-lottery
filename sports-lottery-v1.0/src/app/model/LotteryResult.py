@@ -14,6 +14,9 @@ import app.config as config
 # 七乐彩
 # 2013138,_07_09_13_16_17_26_28,_05
 
+key_term='term'
+key_red_balls='red_balls'
+key_blue_balls='blue_balls'
 
 # 解析结果回调函数
 def parseItemFun(**kwargs):
@@ -35,7 +38,7 @@ def parseItemFun(**kwargs):
     elif type == config.ball_types['seven_happy_ball']:
         red_balls = [fields[ball] for ball in fields if ball in (columns[1:-1])]
         blue_balls = fields[columns[-1]]
-    return (term, red_balls, blue_balls)
+    return {key_term:term, key_red_balls:red_balls, key_blue_balls:blue_balls}
 
 # 解析结果条件回调函数
 def conditionsFun():
