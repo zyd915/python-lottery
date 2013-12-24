@@ -1,7 +1,7 @@
 __author__ = 'Administrator'
 
 
-from app.model.LotteryResult import *
+from app.model.lottery_result import *
 
 if __name__ == '__main__':
     list = load_from_csv(type=ball_types['double_color_ball'], csv_file_path='c:/lottery.csv')

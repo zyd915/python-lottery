@@ -1,6 +1,6 @@
 __author__ = 'Administrator'
-import app.model.LotteryRate as lottery_rate
-import app.model.LotteryResult as lottery_result
+import app.model.lottery_rate as lottery_rate
+import app.model.lottery_result as lottery_result
 import app.config as config
 
 def get_rate_list_by_ballType_and_colorType_and_terms(ball_type=None, color_type=None, terms=0):

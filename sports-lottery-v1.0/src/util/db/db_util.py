@@ -50,7 +50,7 @@ def execute_sql(conn=None, sql=None, params=None):
     if conn is None or sql is None or len(sql) == 0:
         return exec_error
     if debug_flag :
-        print(u'执行SQL：')
+        print("execute_sql: ")
         print(sql)
     try:
         cursor = conn.cursor()
@@ -64,7 +64,7 @@ def execute_sql(conn=None, sql=None, params=None):
         return exec_success
     except sqlite3.Error as e:
         if debug_flag:
-            print(u"执行SQL出现异常：\n" + e.args[0])
+            print("execute_sql error：\n" + e.args[0])
             raise e
         return exec_error
 
@@ -94,17 +94,19 @@ def insert_one_by_dataDict_conditions(conn=None, tableName=None, dataDict=None, 
         return exec_error
     try:
         sql = SqlHelper(table=tableName, opt_type=SqlHelper.opt_types['insert'])
-        sql.set_columns_and_values(columns=dataDict.keys(), values=dataDict.values())
+        sql.set_columns_and_values(columns=list(dataDict.keys()), values=list(dataDict.values()))
         sql.add_conditions(conditions)
         insert_sql = sql.get_sql()
         if debug_flag:
+            print("SqlHelper.insert_one_by_dataDict_conditions insert_sql: ")
             print(insert_sql)
         execute_state = execute_sql(conn, insert_sql, None)
         conn.commit()
         return execute_state
     except sqlite3.Error as e:
         if debug_flag:
-            print(e.args[0])
+            #print(e.args[0])
+            raise e
         return exec_error
     else:
         pass
@@ -201,7 +203,7 @@ class SqlHelper:
         'select':'select'
     }
     sql_templates = {
-        'insert':u'insert into %(table)s %(columns)s values ( %(values)s ) where %(conditions)s ',
+        'insert':u'insert into %(table)s %(columns)s values ( %(values)s )',
         'delete':u'delete from %(table)s where %(conditions)s ',
         'update':u'update %(table)s set %(keyValues)s where %(conditions)s ',
         'select':u'select %(columns)s from %(table)s where %(conditions)s '
@@ -258,7 +260,9 @@ class SqlHelper:
             self.conditions.append(condition)
 
     def add_conditions(self, conditions):
-        if conditions is None or type(conditions) != list : return
+        if conditions is None or (type(conditions) != list and type(conditions) != str) : return
+        if type(conditions) == str:
+            conditions = [conditions]
         self.conditions.extend(conditions)
 
     def add_keyValue(self, key=None, value=None):
@@ -331,6 +335,7 @@ class SqlHelper:
         if self.opt_type == self.opt_types['update'] and (self.keyValues is None or len(self.keyValues) == 0):
             return None
         if debug_flag:
+            print("SqlHelper.get_sql: ")
             print(sql)
         return sql
 

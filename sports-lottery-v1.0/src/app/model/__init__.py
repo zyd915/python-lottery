@@ -2,7 +2,7 @@
 
 __author__ = 'zhangyude'
 
-from app.model.LotteryResult import LotteryResult
+from app.model.lottery_result import LotteryResult
 
 # 创建表
 def create_table():

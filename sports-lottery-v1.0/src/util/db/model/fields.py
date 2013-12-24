@@ -124,9 +124,9 @@ class CharField(Field):
         sql = self.column + " text "
         if self.default is not None and isinstance(self.default, str):
             sql += " default " + str(self.default)
-        elif not self.blank :
+        if not self.blank :
             sql += ' not null '
-        elif self.unique :
+        if self.unique :
             sql += ' unique '
         return sql
 
@@ -156,7 +156,7 @@ class DateField(Field):
         sql = self.column + " date "
         if self.default is not None and isinstance(self.default, datetime.date):
             sql += " default " + str(self.default)
-        elif not self.blank :
+        if not self.blank :
             sql += ' not null '
         return sql
 
@@ -186,7 +186,7 @@ class DateTimeField(Field):
         sql = self.column + " datetime "
         if self.default is not None and isinstance(self.default, datetime.datetime):
             sql += " default " + str(self.default)
-        elif not self.blank :
+        if not self.blank :
             sql += ' not null '
         return sql
 #整型
@@ -215,9 +215,9 @@ class IntegerField(Field):
         else:
             if self.unique :
                 sql += ' unique '
-            elif not self.blank :
+            if not self.blank :
                 sql += ' not null '
-            elif self.default is not None and isinstance(self.default, int):
+            if self.default is not None and isinstance(self.default, int):
                 sql += " default " + int(self.default)
         return sql
 #浮点型
@@ -242,9 +242,9 @@ class FloatField(Field):
         sql = self.column + " float "
         if self.default is not None and isinstance(self.default, float):
             sql += " default " + float(self.default)
-        elif not self.blank :
+        if not self.blank :
             sql += ' not null '
-        elif self.unique :
+        if self.unique :
             sql += ' unique '
         return sql
 
@@ -272,8 +272,8 @@ class DecimalField(Field):
         sql = self.column + ' decimal(' +self.p+','+self.s+') '
         if self.default is not None and isinstance(self.default, float):
             sql += " default " + float(self.default)
-        elif not self.blank :
+        if not self.blank :
             sql += ' not null '
-        elif self.unique :
+        if self.unique :
             sql += ' unique '
         return sql

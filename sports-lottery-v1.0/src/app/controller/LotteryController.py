@@ -9,6 +9,7 @@ from app.vo.ball import Ball
 import app.config as config
 from util.collection.collection_util import *
 from app.service.LotteryService import *
+from settings import lottery_file_paths
 
 # 多实例运行
 class LotteryController(object):
@@ -230,5 +231,8 @@ def main():
         print(blueBalls)
 
 
+
 if __name__ == '__main__':
-    main()
+    #main()
+    LotteryController.init_lottery_result_to_db(ball_type=config.ball_types['double_color_ball'],
+                                                result_csv_file_path=lottery_file_paths[config.ball_types['double_color_ball']])

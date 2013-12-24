@@ -31,14 +31,17 @@ def parseItemFun(**kwargs):
     term = fields[columns[0]]
     if type == config.ball_types['double_color_ball']:
         red_balls = [fields[ball] for ball in fields if ball in (columns[1:-1])]
-        blue_balls = fields[columns[-1]]
+        blue_balls = [fields[columns[-1]]]
     elif type == config.ball_types['big_happy_ball']:
         red_balls = [fields[ball] for ball in fields if ball in (columns[1:-2])]
         blue_balls = [fields[ball] for ball in fields if ball in (columns[-2:])]
     elif type == config.ball_types['seven_happy_ball']:
         red_balls = [fields[ball] for ball in fields if ball in (columns[1:-1])]
-        blue_balls = fields[columns[-1]]
-    return {key_term:term, key_red_balls:red_balls, key_blue_balls:blue_balls}
+        blue_balls =[fields[columns[-1]]]
+    red_balls = red_balls or []
+    blue_balls = blue_balls or []
+
+    return {key_term:term, key_red_balls:','.join(iter(red_balls)), key_blue_balls:','.join(iter(blue_balls))}
 
 # 解析结果条件回调函数
 def conditionsFun():
@@ -69,7 +72,7 @@ class LotteryResult(Model):
         super(LotteryResult, self).__init__(_tableName='LotteryResult')
 
         # 期号
-        self.term = CharField(name='terms', comment=u'期号',unique=True, blank=False, data=term)
+        self.term = CharField(name='term', comment=u'期号',unique=True, blank=False, data=term)
 
         # 抽奖类型（ball_type）
         self.type = IntegerField(name='type', comment=u'抽奖类型', blank=False, data=type)
